@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 03 - Conectando ao Mundo Real</title>
+    <link rel="icon" type="image/png" href="pokebola.png">
+    <style>
+        :root {
+            --primary-color: #E3350D;       /* Vermelho Pokédex */
+            --primary-dark: #B32205;
+            --architecture-color: #0B5ED7; /* Azul para conceitos de Arquitetura */
+            --async-color: #0D9488;        /* Verde/Ciano para Assincronismo/Coroutines */
+            --bg-color: #F4F6F9;
+            --card-bg: #FFFFFF;
+            --text-color: #212529;
+            --text-muted: #6C757D;
+            --code-bg: #1E1E1E;
+            --code-text: #D4D4D4;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* Destaques de palavras-chaves baseados em contexto */
+        .kw-arch { color: var(--architecture-color); font-weight: 700; }
+        .kw-net { color: var(--primary-color); font-weight: 700; }
+        .kw-async { color: var(--async-color); font-weight: 700; }
+        strong { color: #000000; font-weight: 700; }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a31d03 100%);
+            color: white;
+            padding: 3.5rem 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.8rem;
+            letter-spacing: -1px;
+            font-weight: 800;
+        }
+
+        header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin: 0.5rem 0 0 0;
+        }
+
+        .hero-images {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .hero-img {
+            height: 90px;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
+            transition: transform 0.3s ease;
+        }
+
+        .hero-img:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+            z-index: 100;
+        }
+
+        nav a {
+            color: #495057;
+            text-decoration: none;
+            margin: 0 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            background-color: #FFF5F4;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        section {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 14px;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: #1A1D20;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: #343A40;
+            margin-top: 1.8rem;
+        }
+
+        /* Central de Downloads */
+        .download-zone {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            border-left: 5px solid var(--text-color);
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 1.5rem;
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: var(--card-bg);
+            color: #343A40;
+            text-decoration: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 700;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .download-btn img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        /* Blocos de Código */
+        .code-container {
+            position: relative;
+            margin: 1.5rem 0;
+        }
+
+        .code-header {
+            background-color: #2D3139;
+            color: #A0AEC0;
+            padding: 0.5rem 1rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom: 1px solid #3E4451;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            margin: 0;
+            overflow-x: auto;
+            font-family: 'Fira Code', Consolas, Monaco, monospace;
+            font-size: 0.9rem;
+        }
+
+        ul {
+            padding-left: 1.2rem;
+        }
+
+        li {
+            margin-bottom: 0.6rem;
+        }
+
+        .step-box {
+            background-color: #FAFAFB;
+            border: 1px solid #E9ECEF;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .step-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem;
+            background: #1A1D20;
+            color: white;
+            font-weight: 600;
+        }
+
+        footer img {
+            width: 24px;
+            vertical-align: middle;
+            margin: 0 6px;
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2rem; }
+            nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+            nav a { margin: 0; font-size: 0.85rem; }
+            section { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>DEVELOPER ANDROID MODERNO</h1>
+        <p>Aula 03: Arquitetura Avançada, Consumo de APIs e Live Coding</p>
+        <div class="hero-images">
+            <img src="pokedex.png" alt="Pokédex" class="hero-img" onerror="this.style.display='none'">
+            <img src="pokebola.png" alt="Pokebola" class="hero-img" onerror="this.style.display='none'">
+        </div>
+    </header>
+
+    <nav>
+        <a href="#downloads">📥 Downloads</a>
+        <a href="#arquitetura">🧠 MVVM & UDF</a>
+        <a href="#apis">🌐 APIs & Coroutines</a>
+        <a href="#setup">🛠️ Configuração</a>
+        <a href="#livecoding">💻 Mão na Massa</a>
+        <a href="#desafio">🚀 Desafio Prático</a>
+    </nav>
+
+    <main>
+        
+        <section id="downloads" class="download-zone">
+            <h2>📥 Central de Downloads de Ativos</h2>
+            <p>Oriente os alunos a realizarem o download dos arquivos de imagem abaixo. Eles deverão ser inseridos diretamente na pasta <code>res/drawable</code> (ou equivalentes para tratamento de assets locais) do projeto Android para uso nas atividades de UI.</p>
+            <div class="download-grid">
+                <a href="pokedex.png" download="pokedex.png" class="download-btn">
+                    <img src="pokedex.png" alt="Ícone Pokédex" onerror="this.src='https://img.icons8.com/color/48/pokedex.png'">
+                    <span>Baixar Pokedex.png</span>
+                </a>
+                <a href="pokebola.png" download="pokebola.png" class="download-btn">
+                    <img src="pokebola.png" alt="Ícone Pokebola" onerror="this.src='https://img.icons8.com/color/48/pokeball.png'">
+                    <span>Baixar Pokebola.png</span>
+                </a>
+            </div>
+        </section>
+
+        <section id="arquitetura">
+            <h2>🧠 1. Arquitetura de Software e a Morte do Código Espaguete</h2>
+            <p>No ecossistema Android clássico, a falta de padronização induzia os desenvolvedores a inflar as <strong>Activities</strong> com lógicas de rede, persistência e tratamento visual. O Android Moderno resolve isso utilizando separação estrita de escopo.</p>
+            
+            <h3>O Ecossistema MVVM</h3>
+            <ul>
+                <li><span class="kw-arch">Model (Camada de Dados):</span> Encapsula as regras de negócio, conexões de rede locais ou remotas e banco de dados. Totalmente agnóstico à interface visual.</li>
+                <li><span class="kw-arch">ViewModel (O Detentor do Estado):</span> Atua como o cérebro reativo da tela. Solicita informações ao <strong>Model</strong>, manipula e expõe dados através de <span class="kw-arch">UI States</span>. **Importante:** Ele possui um ciclo de vida resiliente e <strong>não é destruído quando o usuário rotaciona a tela do celular</strong>.</li>
+                <li><span class="kw-arch">View (A Camada Visual):</span> Composta pelas funções <span class="kw-arch">@Composable</span> do <strong>Jetpack Compose</strong>. É uma camada puramente passiva que apenas renderiza o estado atual do ViewModel.</li>
+            </ul>
+
+            <h3>O Mecanismo UDF (Unidirectional Data Flow)</h3>
+            <p>Para mitigar estados inconsistentes ou falhas de sincronismo visual, implementamos o <strong>Fluxo Unidirecional de Dados</strong>:</p>
+            <p>1. O <span class="kw-arch">Estado Desce (State flows down)</span>: O <strong>ViewModel</strong> atualiza e despacha a estrutura de dados para as composables.<br>
+            2. O <span class="kw-arch">Evento Sobe (Events flow up)</span>: A <strong>View</strong> capta as ações do usuário (cliques, digitação) e notifica o <strong>ViewModel</strong> por callbacks, sem alterar nenhuma variável por conta própria.</p>
+        </section>
+
+        <section id="apis">
+            <h2>🌐 2. Consumo de APIs REST e Assincronismo de Alta Performance</h2>
+            <p>Para interagir com servidores externos, realizamos chamadas HTTP para <span class="kw-net">APIs REST</span>. A resposta trafega na rede codificada em formato <span class="kw-net">JSON</span> (texto estruturado), que convertemos para objetos manipuláveis do Kotlin.</p>
+            
+            <h3>A Linha de Execução Crítica: Main Thread</h3>
+            <p>O sistema operacional Android aloca a chamada <span class="kw-async">Main Thread</span> (ou UI Thread) unicamente para renderizar os frames da interface gráfica (60hz a 120hz). Qualquer requisição de rede ou processamento de arquivos bloqueante disparado nessa linha causará o congelamento total do app, resultando no erro fatal <span class="kw-async">ANR (App Not Responding)</span>.</p>
+            
+            <h3>A Resolução com Kotlin Coroutines</h3>
+            <p>Utilizamos as <span class="kw-async">Coroutines</span> e funções marcadas com o modificador <span class="kw-async">suspend</span>. Elas efetuam o desvio seguro da carga de processamento de rede para threads de segundo plano (<span class="kw-async">Dispatchers.IO</span>) de forma assíncrona, liberando a linha principal para manter as animações e interações do usuário perfeitamente fluidas.</p>
+        </section>
+
+        <section id="setup">
+            <h2>🛠️ 3. Configuração de Dependências do Projeto</h2>
+            <p>Para preparar o Android Studio, insira as permissões e as ferramentas padrão ouro de mercado nos arquivos de manifesto e compilação do Gradle:</p>
+            
+            <h3>A. Permissão de Rede (AndroidManifest.xml)</h3>
+            <p>Insira a linha imediatamente acima da tag de abertura <code>&lt;application&gt;</code>:</p>
+            <div class="code-container">
+                <div class="code-header"><span>AndroidManifest.xml</span></div>
+                <pre><code>&lt;uses-permission android:name="android.permission.INTERNET" /&gt;</code></pre>
+            </div>
+
+            <h3>B. Dependências de Bibliotecas (build.gradle.kts - Module :app)</h3>
+            <div class="code-container">
+                <div class="code-header"><span>build.gradle.kts (Module :app)</span></div>
+<pre><code>dependencies {
+    // Retrofit2 & GSON Converter: Comunicação de rede automatizada
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    
+    // Coil Compose: Download, cacheamento e renderização de imagens web
+    implementation("io.coil-kt:coil-compose:2.6.0")
+    
+    // Lifecycle ViewModel Compose: Escopo de arquitetura integrado
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+}</code></pre>
+            </div>
+        </section>
+
+        <section id="livecoding">
+            <h2>💻 4. Guia do Live Coding Passo a Passo (Construindo a Pokédex)</h2>
+            <p>Instrua os alunos a estruturarem a separação de pacotes antes de iniciar a escrita lógica do código. Criar os pacotes: <code>model</code>, <code>network</code>, <code>viewmodel</code> e <code>ui</code>.</p>
+
+            <div class="step-box">
+                <h3>Passo 4.1: Camada de Dados (Mapeamento do JSON)</h3>
+                <p><strong>Local do Arquivo:</strong> pacote <code>model</code> &nbsp;|&nbsp; <strong>Nome:</strong> <code>Pokemon.kt</code></p>
+                <div class="code-container">
+                    <div class="code-header"><span>model/Pokemon.kt</span></div>
+<pre><code>package com.seunome.pokedex.model
+
+// Mapeia o objeto raiz do JSON que contém a lista "results"
+data class PokemonResponse(
+    val results: List&lt;PokemonItem&gt;
+)
+
+data class PokemonItem(
+    val name: String,
+    val url: String
+) {
+    // Propriedade customizada para extrair o ID da URL e mapear a arte oficial
+    val imageUrl: String
+        get() {
+            val id = url.split("/").dropLast(1).last()
+            return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/$id.png"
+        }
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="step-box">
+                <h3>Passo 4.2: Camada de Rede (Endpoints e Cliente HTTP)</h3>
+                <p><strong>Local do Arquivo:</strong> pacote <code>network</code> &nbsp;|&nbsp; <strong>Nome:</strong> <code>PokeApiService.kt</code></p>
+                <div class="code-container">
+                    <div class="code-header"><span>network/PokeApiService.kt</span></div>
+<pre><code>package com.seunome.pokedex.network
+
+import com.seunome.pokedex.model.PokemonResponse
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Query
+
+interface PokeApiService {
+    @GET("pokemon")
+    suspend fun fetchPokemonList(
+        @Query("limit") limit: Int = 151
+    ): PokemonResponse
+}
+
+// Singleton de inicialização segura do Retrofit
+object RetrofitClient {
+    private const val BASE_URL = "https://pokeapi.co/api/v2/"
+
+    val apiService: PokeApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create()) // Conversor GSON integrado
+            .build()
+            .create(PokeApiService::class.java)
+    }
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="step-box">
+                <h3>Passo 4.3: O Cérebro da Tela (Gerenciamento de Estados de Rede)</h3>
+                <p><strong>Local do Arquivo:</strong> pacote <code>viewmodel</code> &nbsp;|&nbsp; <strong>Nome:</strong> <code>PokedexViewModel.kt</code></p>
+                <div class="code-container">
+                    <div class="code-header"><span>viewmodel/PokedexViewModel.kt</span></div>
+<pre><code>package com.seunome.pokedex.viewmodel
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.seunome.pokedex.model.PokemonItem
+import com.seunome.pokedex.network.RetrofitClient
+import kotlinx.coroutines.launch
+
+// Máquina de estados explícita mapeada para a nossa View
+sealed interface PokedexUiState {
+    object Loading : PokedexUiState
+    data class Success(val list: List&lt;PokemonItem&gt;) : PokedexUiState
+    data class Error(val message: String) : PokedexUiState
+}
+
+class PokedexViewModel : ViewModel() {
+
+    // Estado observável encapsulado via State Hoisting interno
+    var uiState: PokedexUiState by mutableStateOf(PokedexUiState.Loading)
+        private set
+
+    init {
+        loadPokemons()
+    }
+
+    fun loadPokemons() {
+        // Dispara uma Coroutine assíncrona no escopo seguro do ViewModel
+        viewModelScope.launch {
+            uiState = PokedexUiState.Loading
+            try {
+                val response = RetrofitClient.apiService.fetchPokemonList()
+                uiState = PokedexUiState.Success(response.results)
+            } catch (e: Exception) {
+                uiState = PokedexUiState.Error(e.message ?: "Erro inesperado de conexão.")
+            }
+        }
+    }
+}</code></pre>
+                </div>
+            </div>
+
+            <div class="step-box">
+                <h3>Passo 4.4: A Interface Gráfica Reativa</h3>
+                <p><strong>Local do Arquivo:</strong> pacote <code>ui</code> &nbsp;|&nbsp; <strong>Nome:</strong> <code>PokedexScreen.kt</code></p>
+                <div class="code-container">
+                    <div class="code-header"><span>ui/PokedexScreen.kt</span></div>
+<pre><code>package com.seunome.pokedex.ui
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.seunome.pokedex.model.PokemonItem
+import com.seunome.pokedex.viewmodel.PokedexUiState
+import com.seunome.pokedex.viewmodel.PokedexViewModel
+
+@Composable
+fun PokedexScreen(viewModel: PokedexViewModel = viewModel()) {
+    Scaffold { paddingValues ->
+        Box(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            contentAlignment = Alignment.Center
+        ) {
+            // Recomposições automáticas com base na alteração do Estado do Cérebro
+            when (val state = viewModel.uiState) {
+                is PokedexUiState.Loading -> CircularProgressIndicator(color = Color(0xFFE3350D))
+                is PokedexUiState.Error -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Erro: ${state.message}", color = Color.Red)
+                    Button(onClick = { viewModel.loadPokemons() }) { Text("Tentar Novamente") }
+                }
+                is PokedexUiState.Success -> {
+                    LazyVerticalGrid(columns = GridCells.Fixed(2), contentPadding = PaddingValues(10.dp)) {
+                        items(state.list) { pokemon ->
+                            Card(modifier = Modifier.padding(6.dp).fillMaxWidth()) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(12.dp)) {
+                                    // Coil processando o link remoto e gerando cache local de forma automática
+                                    AsyncImage(model = pokemon.imageUrl, contentDescription = pokemon.name, modifier = Modifier.size(90.dp))
+                                    Text(pokemon.name, style = MaterialTheme.typography.titleMedium)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="desafio">
+            <h2>🚀 5. Atividade Final Avaliativa: Domínio de Arquitetura de Rede</h2>
+            <p>O código da Pokédex foi validado em tempo real por meio da prática de <strong>Live Coding</strong>. Agora, os alunos devem demonstrar sua autonomia técnica replicando o ecossistema aprendido em uma nova estrutura de dados.</p>
+            
+            <h3>Especificações da Missão:</h3>
+            <p>Cada desenvolvedor deve selecionar uma <span class="kw-net">API REST Pública e Gratuita</span> (exemplos: <em>ViaCEP API</em>, <em>Rick and Morty API</em>, <em>The Dog API</em>) e construir um novo aplicativo Android.</p>
+            
+            <h3>Critérios Obrigatórios para Aprovação técnica:</h3>
+            <ul>
+                <li><strong>30% de Peso:</strong> Segregação de pacotes baseada puramente no padrão arquitetural <span class="kw-arch">MVVM</span>.</li>
+                <li><strong>30% de Peso:</strong> Gerenciamento total do ciclo de vida da requisição por intermédio de uma <span class="kw-arch">Sealed Interface</span> de estados (Loading, Success, Error).</li>
+                <li><strong>30% de Peso:</strong> Interface rica implementada em <span class="kw-arch">Jetpack Compose</span> exibindo tratamento assíncrono de listas e carregamento de imagens por links web.</li>
+                <li><strong>10% de Peso:</strong> Versionamento limpo do projeto no GitHub contendo documentação explicativa no arquivo Markdown <code>README.md</code>.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Desenvolvimento Android Moderno &copy; 2026 | Arquitetura MVVM Prática <img src="pokebola.png" alt="Pokebola" onerror="this.style.display='none'"></p>
+    </footer>
+
+</body>
+</html>
